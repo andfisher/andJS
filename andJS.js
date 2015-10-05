@@ -25,7 +25,7 @@ var andJS = (function() {
     
     'use strict';
 
-    var undefined, args = arguments;
+    var undefined;
 
     function andJS() {
 
@@ -59,6 +59,13 @@ var andJS = (function() {
                 }
             }
             return this;
+        },
+        _prop = function(prop, value) {
+            if (typeof prop === 'object') {
+                _each(prop, _prop, this);
+            } else {
+                this[prop] = value;
+            }
         },
         _attr = function(attr, value) {
             if (typeof attr === 'object') {
@@ -99,6 +106,21 @@ var andJS = (function() {
                 var _node = document.createElement(tag);
                 _attr.call(_node, attrs);
                 _last().appendChild(_node);
+                return this;
+            },
+            jsonp: function(url, fn) {
+                fns.tags('head').append('script', {
+                    src: url + (url.indexOf('?') < 0 ? '?' : '&') + 'jsonp=' + fn 
+                });
+                _stack.pop();
+                return this;
+            },
+            attr: function(attr, value){
+                _attr.call(_last(), attr, value);
+                return this;
+            },
+            prop: function(prop, value){
+                _prop.call(_last(), prop, value);
                 return this;
             },
             each: _each,
