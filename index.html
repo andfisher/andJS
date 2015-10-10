@@ -7,17 +7,37 @@
     <body>
         <div id="content">TODO write content</div>
         <form action="#" method="post">
-            <input id="formSubmit" type="submit" value="Submit" />
+            
+            <input type="text" name="textInput" id="textInput" value="" />
+            
+            <input id="formSubmit" class="submit" type="submit" value="Submit" />
+            
+            <input id="formReset" class="reset" type="reset" value="Reset" />
+            <ul class="query">
+                <li>One</li>
+                <li>Two</li>
+                <li>Three</li>
+                <li>Four</li>
+            </ul>
         </form>
         
         <script type="text/javascript" src="./andJS.js"></script>
         <script>
             andJS.tags('body').append('p', {
-                text: 'A simple test'
+                text: 'andJS just appended this text to the body as a simple test'
             });
             andJS.id('content').append('p', {
-                text: 'Another simple test'
+                text: 'andJS just appended this text to the element #content as another simple test'
             });
+            andJS.query('.query li').append('p', {
+                text: 'andJS just added this Text to list items children to .query'
+            });
+            
+            // Test, disable the submit button
+            andJS.query('input.submit').prop('disabled', true);
+            
+            // Test, add a placeholder to the textInput
+            andJS.id('textInput').attr('placeholder', 'andJS just added a placeholer');
             
         </script>
     </body>

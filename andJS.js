@@ -32,6 +32,18 @@ var andJS = (function() {
         var
         _stack = [],
         
+        _typeOf = function(item, type) {
+            if (typeof item === type) return true;
+            if (type === 'array' && item.prototype && item.prototype.toString.call(this) === '[object Array]') return true;
+            if (type === 'HTMLElement') {
+                try {
+                    return obj instanceof HTMLElement;
+                } catch(e){
+                    return /\HTML.+Element/.test(item.constructor.toString());
+                }
+            }
+            return false;
+        },
         _console = function(type, args) {
             if (console && console[type]) {
                 console[type].apply(console, args);
@@ -45,9 +57,20 @@ var andJS = (function() {
             _console('warn', arguments);
             return this;
         },
+        _debug = function() {
+            _console('debug', arguments)
+            return this;
+        },
+        _error = function() {
+            _console('error', arguments)
+            return this;
+        },
 
         _add = function(_el) {
             _stack.push(_el);
+        },
+        _addFromList = function() {
+            _add(arguments[1]);
         },
         _last = function() {
           return _stack.slice(-1).pop();  
@@ -79,6 +102,11 @@ var andJS = (function() {
                 }
             }
         },
+        _append = function(tag, attrs) {
+            var _node = document.createElement(tag);
+            _attr.call(_node, attrs);
+            this.appendChild(_node);
+        },
 
         fns = {
             go: function() {
@@ -93,9 +121,13 @@ var andJS = (function() {
                 return this;
             },
             tags: function(_tagname) {
-                _each(document.getElementsByTagName(_tagname), function(i, _el) {
-                   _add(_el); 
-                });
+                _add(document.getElementsByTagName(_tagname));
+                return this;
+            },
+            query: function(_query) {
+                if (document.querySelectorAll) {
+                    _add(document.querySelectorAll(_query));
+                }
                 return this;
             },
             html: function() {
@@ -103,9 +135,14 @@ var andJS = (function() {
                 return _el ? _el.innerHTML : '';    
             },
             append: function(tag, attrs) {
-                var _node = document.createElement(tag);
-                _attr.call(_node, attrs);
-                _last().appendChild(_node);
+                var last = _last();
+                if (_typeOf(last, 'HTMLElement')) {
+                    _append.call(last, tag, attrs);
+                } else {
+                    _each(last, function() {
+                        _append.call(arguments[1], tag, attrs);
+                    });
+                }
                 return this;
             },
             jsonp: function(url, fn) {
@@ -116,16 +153,35 @@ var andJS = (function() {
                 return this;
             },
             attr: function(attr, value){
-                _attr.call(_last(), attr, value);
+                var last = _last();
+                if (_typeOf(last, 'HTMLElement')) {
+                    _attr.call(last, attr, value);
+                } else {
+                    _each(last, function() {
+                        _attr.call(arguments[1], attr, value);
+                    });
+                }
                 return this;
             },
             prop: function(prop, value){
-                _prop.call(_last(), prop, value);
+                var last = _last();
+                if (_typeOf(last, 'HTMLElement')) {
+                    _prop.call(last, prop, value);
+                } else {
+                    _each(last, function() {
+                        _prop.call(arguments[1], prop, value);
+                    });
+                }
+                return this;
+            },
+            up: function() {
+                _stack.pop();
                 return this;
             },
             each: _each,
             log: _log,
-            warn: _warn
+            warn: _warn,
+            typeOf: _typeOf
         };
         
         return fns;
